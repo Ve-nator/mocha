@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sinusoidal Curves</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+    canvas {
+      display: block;
+      border: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const curves = []; // Массив для хранения кривых
+
+    function addCurve(amplitude, frequency, numOfHarmonics) {
+      const curve = { amplitude, frequency, numOfHarmonics };
+      curves.push(curve);
+    }
+
+    function drawCurve(curve, time) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = canvas.height / 4; // Радиус для синусоиды
+
+      const { amplitude, frequency, numOfHarmonics } = curve;
+
+      context.beginPath();
+
+      for (let angle = 0; angle < 360; angle++) {
+        const radian = (angle * Math.PI) / 180;
+        const x = centerX + radius * Math.cos(radian);
+        const y = centerY + radius * Math.sin(radian);
+
+        for (let i = 1; i <= numOfHarmonics; i++) {
+          const harmonicAmplitude = amplitude / i;
+          const harmonicFrequency = frequency * i * (1 + i * 0.1); // Дополнительный множитель для частоты
+          const offsetY = harmonicAmplitude * Math.sin(harmonicFrequency * x + time);
+          context.lineTo(x, y + offsetY);
+        }
+      }
+
+      context.strokeStyle = 'gold';
+      context.stroke();
+    }
+
+    function fillAreaBetweenCurves(curve1, curve2, time) {
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = canvas.height / 4; // Радиус для синусоиды
+
+      const { amplitude: amplitude1, frequency: frequency1, numOfHarmonics: numOfHarmonics1 } = curve1;
+      const { amplitude: amplitude2, frequency: frequency2, numOfHarmonics: numOfHarmonics2 } = curve2;
+
+      // Calculate the distance between curves
+      const distance = Math.abs(amplitude2 - amplitude1);
+
+      // Fill the area only when the distance is less than 100
+      if (distance < 100) {
+        context.beginPath();
+
+        for (let angle = 0; angle < 360; angle++) {
+          const radian = (angle * Math.PI) / 180;
+          const x = centerX + radius * Math.cos(radian);
+          const y1 = centerY + radius * Math.sin(radian);
+
+          for (let i = 1; i <= numOfHarmonics1; i++) {
+            const harmonicAmplitude = amplitude1 / i;
+            const harmonicFrequency = frequency1 * i * (1 + i * 0.1);
+            const offsetY1 = harmonicAmplitude * Math.sin(harmonicFrequency * x + time);
+                        context.lineTo(x, y1 + offsetY1);
+          }
+
+          for (let i = 1; i <= numOfHarmonics2; i++) {
+            const harmonicAmplitude = amplitude2 / i;
+            const harmonicFrequency = frequency2 * i * (1 + i * 0.1);
+            const offsetY2 = harmonicAmplitude * Math.sin(harmonicFrequency * x + time);
+            context.lineTo(x, y1 + offsetY2);
+          }
+        }
+
+        context.closePath();
+        context.fillStyle = 'rgb(255,215,0,0.1)';
+        context.fill();
+      }
+    }
+
+    function draw() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      const time = Date.now() * 0.0005; // Время в секундах
+
+      for (let i = 0; i < curves.length - 1; i++) {
+        const curve1 = curves[i];
+        const curve2 = curves[i + 1];
+
+        drawCurve(curve1, time);
+        drawCurve(curve2, time);
+        fillAreaBetweenCurves(curve1, curve2, time);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    // Создание кривых
+    const numOfCurves = 2; // Количество кривых
+
+    for (let i = 0; i < numOfCurves; i++) {
+      const amplitude = Math.random() * 100 + 50; // Случайная амплитуда от 50 до 150
+      const frequency = Math.random() * 0.01 + 0.001; // Случайная частота от 0.001 до 0.011
+      const numOfHarmonics = Math.floor(Math.random() * 6) + 3; // Случайное количество гармоник от 1 до 6
+
+      addCurve(amplitude, frequency, numOfHarmonics);
+    }
+
+    draw();
+  </script>
+</body>
+</html>
